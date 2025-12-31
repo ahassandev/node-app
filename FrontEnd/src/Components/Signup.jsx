@@ -1,9 +1,14 @@
-// src/Components/Signup.jsx
 import React, { useState } from "react";
 import axios from "axios";
 
 function Signup({ onSignupSuccess, onGoToLogin }) {
-  const [form, setForm] = useState({ name: "", username: "", email: "", password: "", confirmPassword: "" });
+  const [form, setForm] = useState({
+    name: "",
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
   const [error, setError] = useState("");
 
   const handleChange = (e) => {
@@ -13,22 +18,31 @@ function Signup({ onSignupSuccess, onGoToLogin }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (form.password.length < 6) {
+      setError("Password must be at least 6 characters long!");
+      return;
+    }
+
     if (form.password !== form.confirmPassword) {
       setError("Passwords do not match!");
       return;
     }
+
     try {
       await axios.post("http://localhost:5000/api/auth/signup", form);
-      if (onSignupSuccess) onSignupSuccess(); // redirect to login
+      if (onSignupSuccess) onSignupSuccess();
     } catch (err) {
       setError(err.response?.data?.message || "Signup failed!");
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-r from-purple-700 via-pink-600 to-red-500 p-4">
+    <div className="min-h-screen flex flex-col bg-linear-to-r from-purple-700 via-pink-600 to-red-500 p-4">
       <div className="flex-1 flex flex-col justify-center max-w-md w-full mx-auto bg-gray-900 p-8 rounded-xl shadow-lg">
-        <h1 className="text-3xl font-bold text-white text-center mb-6">Sign Up</h1>
+        <h1 className="text-3xl font-bold text-white text-center mb-6">
+          Sign Up
+        </h1>
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
           <input
             type="text"
@@ -80,13 +94,12 @@ function Signup({ onSignupSuccess, onGoToLogin }) {
 
           <button
             type="submit"
-            className="mt-2 py-3 bg-gradient-to-r cursor-pointer from-blue-500 to-purple-600 hover:from-blue-400 hover:to-purple-500 text-white font-semibold rounded-lg transition-all"
+            className="mt-2 py-3 bg-linear-to-r cursor-pointer from-blue-500 to-purple-600 hover:from-blue-400 hover:to-purple-500 text-white font-semibold rounded-lg transition-all"
           >
             Sign Up
           </button>
         </form>
 
-        {/* Text button for login */}
         <div className="text-center mt-4">
           <button
             onClick={onGoToLogin}

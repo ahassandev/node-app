@@ -13,7 +13,7 @@ function Users() {
       const res = await axios.get("http://localhost:5000/api/users");
       setUsers(res.data);
 
-      console.log("Users Loaded:", res.data); // check log
+      console.log("Users Loaded:", res.data);
     } catch (err) {
       console.log("Error fetching users:", err);
     }
@@ -29,9 +29,15 @@ function Users() {
         <div className="bg-gray-900 text-white p-4 rounded-lg">
           {users.map((u) => (
             <div key={u._id} className="border-b border-gray-700 py-2">
-              <p><b>Name:</b> {u.name}</p>
-              <p><b>Username:</b> {u.username}</p>
-              <p><b>Email:</b> {u.email}</p>
+              <p>
+                <b>Name:</b> {u.name}
+              </p>
+              <p>
+                <b>Username:</b> {u.username}
+              </p>
+              <p>
+                <b>Email:</b> {u.email}
+              </p>
             </div>
           ))}
         </div>

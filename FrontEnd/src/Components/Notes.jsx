@@ -1,34 +1,29 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
+import api from "../axiosConfig";
 
-function Users({ user }) {
-  const [users, setUsers] = useState([]);
-
-  const fetchUsers = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/users", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setUsers(res.data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+function Notes({ user }) {
+  const [notes, setNotes] = useState([]);
 
   useEffect(() => {
-    fetchUsers();
+    const fetchNotes = async () => {
+      try {
+        const res = await api.get("/notes"); // backend me /notes route
+        setNotes(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchNotes();
   }, []);
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6">
-      <h1 className="text-2xl mb-4">All Users</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {users.map((u) => (
-          <div key={u._id} className="bg-gray-800 p-4 rounded-lg">
-            <h2 className="text-blue-400">{u.name}</h2>
-            <p className="text-gray-300">Username: {u.username}</p>
-            <p className="text-gray-300">Email: {u.email}</p>
+      <h1 className="text-2xl mb-4">Welcome, {user.username}!</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {notes.map((note) => (
+          <div key={note._id} className="bg-gray-800 p-4 rounded-lg">
+            <h2 className="text-blue-400">{note.title}</h2>
+            <p>{note.content}</p>
           </div>
         ))}
       </div>
@@ -36,4 +31,4 @@ function Users({ user }) {
   );
 }
 
-export default Users;
+export default Notes;

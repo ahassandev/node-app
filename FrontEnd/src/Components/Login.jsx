@@ -11,18 +11,26 @@ function Login({ onLoginSuccess, onBack, onSignupRedirect }) {
     setError("");
   };
 
+  // Submit handler with cookies support
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", form);
-      if (onLoginSuccess) onLoginSuccess(res.data);
+      const res = await axios.post(
+        "http://localhost:5000/api/auth/login",
+        form,
+        {
+          withCredentials: true // important: send cookies to server
+        }
+      );
+      if (onLoginSuccess) onLoginSuccess(res.data.user); // send logged-in user to parent
     } catch (err) {
       setError(err.response?.data?.message || "Login failed!");
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-r from-purple-700 via-pink-600 to-red-500 p-4">
+    <div className="min-h-screen flex flex-col bg-linear-to-r from-purple-700 via-pink-600 to-red-500 p-4">
+      {/* Navbar */}
       <div className="flex items-center mb-6">
         <button onClick={onBack} className="text-white text-2xl mr-4">
           ←
@@ -30,6 +38,7 @@ function Login({ onLoginSuccess, onBack, onSignupRedirect }) {
         <h1 className="text-white text-2xl font-bold">Login</h1>
       </div>
 
+      {/* Form Card */}
       <div className="bg-gray-900 p-8 rounded-xl shadow-lg w-full max-w-md mx-auto flex-1 flex flex-col justify-center">
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
           <input
@@ -55,12 +64,13 @@ function Login({ onLoginSuccess, onBack, onSignupRedirect }) {
 
           <button
             type="submit"
-            className="mt-2 py-3 cursor-pointer bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-400 hover:to-purple-500 text-white font-semibold rounded-lg transition-all"
+            className="mt-2 py-3 cursor-pointer bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-400 hover:to-purple-500 text-white font-semibold rounded-lg transition-all"
           >
             Login
           </button>
         </form>
 
+        {/* Create Account Link */}
         <div className="mt-4 text-center">
           <p className="text-gray-400">
             Don't have an account?{" "}
