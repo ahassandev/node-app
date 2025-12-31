@@ -1,14 +1,21 @@
+// middleware/auth.js
 const jwt = require("jsonwebtoken");
 
-module.exports = function (req, res, next) {
-  const token = req.header("Authorization")?.replace("Bearer ", "");
-  if (!token) return res.status(401).json({ message: "No token, authorization denied" });
-
+const auth = (req, res, next) => {
   try {
+    // Cookies se access token le rahe hain
+    const token = req.cookies?.accessToken;
+    if (!token) {
+      return res.status(401).json({ message: "Not authenticated!" });
+    }
+
+    // Token verify
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // user info attach kar di
+    req.user = decoded; // request me user info attach kar di
     next();
   } catch (err) {
-    res.status(401).json({ message: "Token is not valid" });
+    return res.status(403).json({ message: "Token expired or invalid!" });
   }
 };
+
+module.exports = auth;
