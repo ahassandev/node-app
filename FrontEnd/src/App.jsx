@@ -1,23 +1,23 @@
-// src/App.jsx
 import React, { useState, useEffect } from "react";
 import Signup from "./Components/Signup.jsx";
 import Login from "./Components/Login.jsx";
 import Notes from "./Components/Notes.jsx";
-import api from "./axiosConfig"; // axios with credentials
+import api from "./axiosConfig";
 
 function App() {
-  const [currentPage, setCurrentPage] = useState("login"); // default login page
+  const [currentPage, setCurrentPage] = useState("login");
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // loading state for token check
+  const [loading, setLoading] = useState(true);
 
-  // Auto-check if user is already logged in via cookie/token
+  // Auto-check login
   useEffect(() => {
     const checkUser = async () => {
       try {
-        const res = await api.get("/auth/me"); // backend route to verify token
+        const res = await api.get("/auth/me"); // server reads cookie
         setUser(res.data.user);
         setCurrentPage("notes");
       } catch (err) {
+        setUser(null);
         setCurrentPage("login");
       } finally {
         setLoading(false);
@@ -30,13 +30,21 @@ function App() {
     return <div className="text-white text-center mt-20">Loading...</div>;
   }
 
-  // Signup -> Login redirect
   const handleSignupSuccess = () => setCurrentPage("login");
 
-  // Login success -> Notes page
-  const handleLoginSuccess = (userData) => {
-    setUser(userData);
-    setCurrentPage("notes");
+  const handleLoginSuccess = (data) => {
+    setUser(data.user);       // set user state
+    setCurrentPage("notes");  // go to notes
+  };
+
+  const handleLogout = async () => {
+    try {
+      await api.post("/auth/logout"); // delete cookie from server
+      setUser(null);                  // reset frontend state
+      setCurrentPage("login");        // show login page
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -55,7 +63,7 @@ function App() {
         />
       )}
 
-      {currentPage === "notes" && <Notes user={user} />}
+      {currentPage === "notes" && <Notes user={user} onLogout={handleLogout} />}
     </>
   );
 }

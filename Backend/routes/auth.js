@@ -7,18 +7,24 @@ const jwt = require("jsonwebtoken");
 // ---------------- SIGNUP ----------------
 router.post("/signup", async (req, res) => {
   const { name, username, email, password } = req.body;
-  try {
-    // Check if user already exists
-    const existingUser = await User.findOne({
-      $or: [{ email }, { username }]
-    });
-    if (existingUser) return res.status(400).json({ message: "User already exists!" });
 
-    // Hash password
+  try {
+    const existingUser = await User.findOne({
+      $or: [{ email }, { username }],
+    });
+
+    if (existingUser)
+      return res.status(400).json({ message: "User already exists!" });
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Save user
-    const user = new User({ name, username, email, password: hashedPassword });
+    const user = new User({
+      name,
+      username,
+      email,
+      password: hashedPassword,
+    });
+
     await user.save();
 
     res.status(201).json({ message: "Signup successful!" });
@@ -28,48 +34,77 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-// ---------------- LOGIN ----------------
+
+// LOGIN route
 router.post("/login", async (req, res) => {
   try {
     const { identifier, password } = req.body;
-
-    // Find by email OR username
     const user = await User.findOne({
-      $or: [{ email: identifier }, { username: identifier }]
+      $or: [{ email: identifier }, { username: identifier }],
     });
 
     if (!user) return res.status(400).json({ message: "User not found!" });
 
-    // Compare password
-    const matchPassword = await bcrypt.compare(password, user.password);
-    if (!matchPassword) return res.status(400).json({ message: "Invalid password!" });
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) return res.status(400).json({ message: "Invalid password!" });
 
-    // Generate JWT token
-    const token = jwt.sign(
-      { id: user._id, username: user.username, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
 
-    // Send token & user info
+    // ✅ Cookie set
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false,       // local dev ke liye false, production me true
+      sameSite: "lax",     // important
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
     res.json({
-      token,
       user: {
         id: user._id,
         name: user.name,
         username: user.username,
-        email: user.email
-      }
+        email: user.email,
+      },
     });
-
   } catch (err) {
-    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 });
+
+
+
+
+// ---------------- GET LOGGED IN USER (AUTO LOGIN) ----------------
 router.get("/me", async (req, res) => {
-  res.json({ message: "OK" });
+  const token = req.cookies.token;
+  if (!token) return res.status(401).json({ message: "Not authenticated" });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select("-password");
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.json({ user });
+  } catch (err) {
+    res.status(401).json({ message: "Invalid token" });
+  }
 });
+
+
+
+
+
+// Logout route
+router.post("/logout", (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: false, // production me true
+    sameSite: "lax",
+  });
+  res.json({ message: "Logged out successfully" });
+});
+
+
 
 
 module.exports = router;
