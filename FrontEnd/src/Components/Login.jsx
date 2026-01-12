@@ -1,9 +1,11 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../axiosConfig";
 
-function Login({ onLoginSuccess, onSignupRedirect }) {
+function Login({ onLoginSuccess }) {
   const [form, setForm] = useState({ identifier: "", password: "" });
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -13,9 +15,10 @@ function Login({ onLoginSuccess, onSignupRedirect }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await api.post("/auth/login", form); 
-      onLoginSuccess && onLoginSuccess(res.data); 
-    } catch (err) {
+      const res = await api.post("/auth/login", form);
+      onLoginSuccess && onLoginSuccess(res.data);
+      navigate("/notes");
+    } catch (err) {   
       setError(err.response?.data?.message || "Login failed!");
     }
   };
@@ -50,22 +53,20 @@ function Login({ onLoginSuccess, onSignupRedirect }) {
 
           <button
             type="submit"
-            className="mt-2 py-3 bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-400 hover:to-purple-500 text-white font-semibold rounded-lg"
+            className="mt-2 py-3 cursor-pointer bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-400 hover:to-purple-500 text-white font-semibold rounded-lg"
           >
             Login
           </button>
         </form>
 
         <div className="mt-4 text-center">
-          <p className="text-gray-400">
-            Don’t have an account?{" "}
-            <button
-              onClick={onSignupRedirect}
-              className="text-blue-400 font-semibold hover:underline"
-            >
-              Create new account
-            </button>
-          </p>
+          <button
+            type="button"
+            onClick={() => navigate("/signup")}
+            className="text-blue-400 font-semibold hover:underline cursor-pointer"
+          >
+            Don’t have an account? Create new account
+          </button>
         </div>
       </div>
     </div>

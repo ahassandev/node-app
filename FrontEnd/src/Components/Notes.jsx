@@ -1,9 +1,10 @@
-// src/Components/Notes.jsx
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; 
 import api from "../axiosConfig";
 
 function Notes({ user, onLogout }) {
   const [notes, setNotes] = useState([]);
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     const fetchNotes = async () => {
@@ -17,13 +18,23 @@ function Notes({ user, onLogout }) {
     fetchNotes();
   }, []);
 
+
+  const handleLogoutClick = async () => {
+    try {
+      await onLogout();       
+      navigate("/logout");   
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl">Welcome, {user.username}!</h1>
 
         <button
-          onClick={onLogout}
+          onClick={handleLogoutClick} 
           className="py-2 px-4 bg-red-600 hover:bg-red-700 rounded-lg cursor-pointer text-white"
         >
           Logout

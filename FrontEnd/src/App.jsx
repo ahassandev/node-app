@@ -1,24 +1,28 @@
 import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Signup from "./Components/Signup.jsx";
 import Login from "./Components/Login.jsx";
 import Notes from "./Components/Notes.jsx";
 import api from "./axiosConfig";
 
+function LogoutPage({ onLogout }) {
+  useEffect(() => {
+    onLogout(); 
+  }, []);
+  return <Navigate to="/login" replace />;
+}
+
 function App() {
-  const [currentPage, setCurrentPage] = useState("login");
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Auto-check login
   useEffect(() => {
     const checkUser = async () => {
       try {
-        const res = await api.get("/auth/me"); // server reads cookie
+        const res = await api.get("/auth/me");
         setUser(res.data.user);
-        setCurrentPage("notes");
       } catch (err) {
         setUser(null);
-        setCurrentPage("login");
       } finally {
         setLoading(false);
       }
@@ -26,45 +30,40 @@ function App() {
     checkUser();
   }, []);
 
-  if (loading) {
-    return <div className="text-white text-center mt-20">Loading...</div>;
-  }
-
-  const handleSignupSuccess = () => setCurrentPage("login");
-
   const handleLoginSuccess = (data) => {
-    setUser(data.user);       // set user state
-    setCurrentPage("notes");  // go to notes
+    setUser(data.user);
   };
 
   const handleLogout = async () => {
     try {
-      await api.post("/auth/logout"); // delete cookie from server
-      setUser(null);                  // reset frontend state
-      setCurrentPage("login");        // show login page
+      await api.post("/auth/logout"); 
+      setUser(null);
     } catch (err) {
       console.error(err);
     }
   };
 
+  if (loading) return <div className="text-white text-center mt-20">Loading...</div>;
+
   return (
-    <>
-      {currentPage === "signup" && (
-        <Signup
-          onSignupSuccess={handleSignupSuccess}
-          onGoToLogin={() => setCurrentPage("login")}
+    <Router>
+      <Routes>
+        <Route
+          path="/login"
+          element={!user ? <Login onLoginSuccess={handleLoginSuccess} /> : <Navigate to="/notes" />}
         />
-      )}
-
-      {currentPage === "login" && (
-        <Login
-          onLoginSuccess={handleLoginSuccess}
-          onSignupRedirect={() => setCurrentPage("signup")}
+        <Route
+          path="/signup"
+          element={!user ? <Signup /> : <Navigate to="/notes" />}
         />
-      )}
-
-      {currentPage === "notes" && <Notes user={user} onLogout={handleLogout} />}
-    </>
+        <Route
+          path="/notes"
+          element={user ? <Notes user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}
+        />
+        <Route path="/logout" element={<LogoutPage onLogout={handleLogout} />} />
+        <Route path="*" element={<Navigate to={user ? "/notes" : "/login"} />} />
+      </Routes>
+    </Router>
   );
 }
 

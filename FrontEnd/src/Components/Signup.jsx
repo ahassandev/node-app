@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import api from "../axiosConfig";
 
-function Signup({ onSignupSuccess, onGoToLogin }) {
+function Signup() {
   const [form, setForm] = useState({
     name: "",
     username: "",
@@ -10,6 +11,7 @@ function Signup({ onSignupSuccess, onGoToLogin }) {
     confirmPassword: "",
   });
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -30,8 +32,8 @@ function Signup({ onSignupSuccess, onGoToLogin }) {
     }
 
     try {
-      await axios.post("http://localhost:5000/api/auth/signup", form);
-      if (onSignupSuccess) onSignupSuccess();
+      await api.post("/auth/signup", form);
+      navigate("/login"); 
     } catch (err) {
       setError(err.response?.data?.message || "Signup failed!");
     }
@@ -44,67 +46,20 @@ function Signup({ onSignupSuccess, onGoToLogin }) {
           Sign Up
         </h1>
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-          <input
-            type="text"
-            name="name"
-            placeholder="Name"
-            value={form.name}
-            onChange={handleChange}
-            className="p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:outline-none"
-            required
-          />
-          <input
-            type="text"
-            name="username"
-            placeholder="Username"
-            value={form.username}
-            onChange={handleChange}
-            className="p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:outline-none"
-            required
-          />
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={form.email}
-            onChange={handleChange}
-            className="p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:outline-none"
-            required
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={form.password}
-            onChange={handleChange}
-            className="p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:outline-none"
-            required
-          />
-          <input
-            type="password"
-            name="confirmPassword"
-            placeholder="Confirm Password"
-            value={form.confirmPassword}
-            onChange={handleChange}
-            className="p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-red-500 focus:outline-none"
-            required
-          />
+          <input type="text" name="name" placeholder="Name" value={form.name} onChange={handleChange} required className="p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:outline-none"/>
+          <input type="text" name="username" placeholder="Username" value={form.username} onChange={handleChange} required className="p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:outline-none"/>
+          <input type="email" name="email" placeholder="Email" value={form.email} onChange={handleChange} required className="p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:outline-none"/>
+          <input type="password" name="password" placeholder="Password" value={form.password} onChange={handleChange} required className="p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-blue-500 focus:outline-none"/>
+          <input type="password" name="confirmPassword" placeholder="Confirm Password" value={form.confirmPassword} onChange={handleChange} required className="p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:border-red-500 focus:outline-none"/>
+          {error && <p className="text-red-500 text-sm">{error}</p>}
 
-          {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
-
-          <button
-            type="submit"
-            className="mt-2 py-3 bg-linear-to-r cursor-pointer from-blue-500 to-purple-600 hover:from-blue-400 hover:to-purple-500 text-white font-semibold rounded-lg transition-all"
-          >
+          <button type="submit" className="mt-2 py-3 cursor-pointer bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-400 hover:to-purple-500 text-white font-semibold rounded-lg">
             Sign Up
           </button>
         </form>
 
         <div className="text-center mt-4">
-          <button
-            onClick={onGoToLogin}
-            className="text-sm text-blue-400 hover:underline cursor-pointer"
-          >
+          <button type="button" onClick={() => navigate("/login")} className="text-sm text-blue-400 hover:underline cursor-pointer">
             Already have an account? Login
           </button>
         </div>
