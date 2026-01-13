@@ -34,7 +34,6 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-
 // LOGIN route
 router.post("/login", async (req, res) => {
   try {
@@ -48,15 +47,17 @@ router.post("/login", async (req, res) => {
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(400).json({ message: "Invalid password!" });
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
 
     // ✅ Cookie set
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,       // local dev ke liye false, production me true
-      sameSite: "lax",     // important
+      secure: false, // local dev ke liye false, production me true
+      sameSite: "lax", // important
       maxAge: 24 * 60 * 60 * 1000,
-    });
+    }); 
 
     res.json({
       user: {
@@ -70,9 +71,6 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
-
-
 
 // ---------------- GET LOGGED IN USER (AUTO LOGIN) ----------------
 router.get("/me", async (req, res) => {
@@ -90,21 +88,14 @@ router.get("/me", async (req, res) => {
   }
 });
 
-
-
-
-
 // Logout route
 router.post("/logout", (req, res) => {
   res.clearCookie("token", {
-    httpOnly: true, 
+    httpOnly: true,
     secure: false, // production me true
     sameSite: "lax",
   });
   res.json({ message: "Logged out successfully" });
 });
-
-
-
 
 module.exports = router;

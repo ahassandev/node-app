@@ -1,6 +1,6 @@
 const express = require("express");
 const Note = require("../models/Notes");
-const auth = require("../middleware/auth");  // <-- add this
+const auth = require("../middleware/auth");
 
 const router = express.Router();
 
@@ -15,7 +15,7 @@ router.post("/", auth, async (req, res) => {
   const note = new Note({
     title: req.body.title,
     content: req.body.content,
-    user: req.user.id
+    user: req.user.id,
   });
 
   const newNote = await note.save();
@@ -24,11 +24,9 @@ router.post("/", auth, async (req, res) => {
 
 // UPDATE NOTE
 router.put("/:id", auth, async (req, res) => {
-  const note = await Note.findByIdAndUpdate(
-    req.params.id,
-    req.body,
-    { new: true }
-  );
+  const note = await Note.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+  });
   res.json(note);
 });
 
