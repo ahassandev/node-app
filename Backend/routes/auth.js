@@ -97,7 +97,7 @@ router.get("/me", async (req, res) => {
 // Logout route
 router.post("/logout", (req, res) => {
   res.clearCookie("token", {
-    httpOnly: true,
+    httpOnly: true, 
     secure: false, // production me true
     sameSite: "lax",
   });

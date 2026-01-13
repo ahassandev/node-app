@@ -12,7 +12,7 @@ function LogoutPage({ onLogout }) {
   return <Navigate to="/login" replace />;
 }
 
-function App() {
+function App() {  
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
