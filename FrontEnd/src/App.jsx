@@ -5,9 +5,11 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+
 import Signup from "./Components/Signup.jsx";
 import Login from "./Components/Login.jsx";
 import Notes from "./Components/Notes.jsx";
+import CreateBlog from "./Components/CreateBlog.jsx"; 
 import api from "./axiosConfig";
 
 function LogoutPage({ onLogout }) {
@@ -54,6 +56,7 @@ function App() {
   return (
     <Router>
       <Routes>
+        
         <Route
           path="/login"
           element={
@@ -64,10 +67,14 @@ function App() {
             )
           }
         />
+
+
         <Route
           path="/signup"
           element={!user ? <Signup /> : <Navigate to="/notes" />}
         />
+
+
         <Route
           path="/notes"
           element={
@@ -78,10 +85,20 @@ function App() {
             )
           }
         />
+
+        
+        <Route
+          path="/create-blog"
+          element={user ? <CreateBlog /> : <Navigate to="/login" />}
+        />
+
+        
         <Route
           path="/logout"
           element={<LogoutPage onLogout={handleLogout} />}
-        />
+        />  
+
+        
         <Route
           path="*"
           element={<Navigate to={user ? "/notes" : "/login"} />}
