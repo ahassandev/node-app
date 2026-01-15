@@ -1,21 +1,20 @@
 import React, { useState, useEffect } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 import Signup from "./Components/Signup.jsx";
 import Login from "./Components/Login.jsx";
 import Notes from "./Components/Notes.jsx";
-import CreateBlog from "./Components/CreateBlog.jsx"; 
+import CreateBlog from "./Components/CreateBlog.jsx";
+import BlogIndex from "./Components/BlogIndex.jsx";
+import EditBlog from "./Components/EditBlog.jsx";
 import api from "./axiosConfig";
 
+// Logout Page
 function LogoutPage({ onLogout }) {
   useEffect(() => {
     onLogout();
-  }, []);
+  }, [onLogout]);
+
   return <Navigate to="/login" replace />;
 }
 
@@ -23,6 +22,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // 🔐 Check login on refresh
   useEffect(() => {
     const checkUser = async () => {
       try {
@@ -37,10 +37,12 @@ function App() {
     checkUser();
   }, []);
 
+  // Login success
   const handleLoginSuccess = (data) => {
     setUser(data.user);
   };
 
+  // Logout
   const handleLogout = async () => {
     try {
       await api.post("/auth/logout");
@@ -50,13 +52,15 @@ function App() {
     }
   };
 
-  if (loading)
+  if (loading) {
     return <div className="text-white text-center mt-20">Loading...</div>;
+  }
 
   return (
     <Router>
       <Routes>
-        
+
+        {/* LOGIN */}
         <Route
           path="/login"
           element={
@@ -68,13 +72,13 @@ function App() {
           }
         />
 
-
+        {/* SIGNUP */}
         <Route
           path="/signup"
           element={!user ? <Signup /> : <Navigate to="/notes" />}
         />
 
-
+        {/* NOTES (HOME AFTER LOGIN) */}
         <Route
           path="/notes"
           element={
@@ -86,23 +90,36 @@ function App() {
           }
         />
 
-        
+        {/* CREATE BLOG */}
         <Route
           path="/create-blog"
           element={user ? <CreateBlog /> : <Navigate to="/login" />}
         />
 
-        
+        {/* BLOG LIST */}
+        <Route
+          path="/blog/index"
+          element={user ? <BlogIndex user={user} /> : <Navigate to="/login" />}
+        />
+
+        {/* EDIT BLOG */}
+        <Route
+          path="/blog/edit/:id"
+          element={user ? <EditBlog /> : <Navigate to="/login" />}
+        />
+
+        {/* LOGOUT */}
         <Route
           path="/logout"
           element={<LogoutPage onLogout={handleLogout} />}
-        />  
+        />
 
-        
+        {/* FALLBACK */}
         <Route
           path="*"
           element={<Navigate to={user ? "/notes" : "/login"} />}
         />
+
       </Routes>
     </Router>
   );

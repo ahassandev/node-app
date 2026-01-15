@@ -12,9 +12,10 @@ dotenv.config();
 
 const app = express();
 
+// CORS
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "http://localhost:5173", // React frontend
     credentials: true,
   })
 );
@@ -22,12 +23,13 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
+// Connect MongoDB
 connectDB(process.env.MONGO_URI);
 
-// ✅ ROUTES
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/notes", notesRoutes);
-app.use("/api/blog", blogRoutes); // 🔥 THIS WAS MISSING
+app.use("/api/blog", blogRoutes); // blog routes
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
