@@ -1,80 +1,82 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import api from "../axiosConfig";
 
-function EditBlog() {
-  const { id } = useParams(); // blog ID from URL
+function BlogIndex({ user }) {
+  const [blogs, setBlogs] = useState([]);
   const navigate = useNavigate();
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [loading, setLoading] = useState(true);
 
-  // Fetch single blog data
   useEffect(() => {
-    const fetchBlog = async () => {
-      try {
-        const res = await api.get(`/blog/${id}`);
-        setTitle(res.data.title);
-        setDescription(res.data.description);
-      } catch (err) {
-        console.error("FETCH BLOG ERROR:", err.response?.data);
-        alert("Cannot fetch blog");
-      } finally {
-        setLoading(false);
-      }
-    };
+    fetchBlogs();
+  }, []);
 
-    fetchBlog();
-  }, [id]);
-
-  // Handle blog update
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const fetchBlogs = async () => {
     try {
-      await api.put(`/blog/${id}`, { title, description });
-      alert("Blog updated successfully");
-      navigate("/blog/index"); // Go back to all blogs
+      const res = await api.get("/blog");
+      setBlogs(res.data);
     } catch (err) {
-      console.error("UPDATE BLOG ERROR:", err.response?.data);
-      alert("Blog update failed");
+      console.error("FETCH ERROR:", err.response?.data);
     }
   };
 
-  if (loading)
-    return <div className="text-white text-center mt-20">Loading...</div>;
+  const deleteBlog = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this blog?")) return;
+
+    try {
+      await api.delete(`/blog/${id}`);
+      fetchBlogs();
+    } catch (err) {
+      console.error(err);
+      alert("Delete failed");
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex justify-center items-center">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-gray-800 p-6 rounded-lg w-full max-w-md"
-      >
-        <h2 className="text-2xl mb-4">Edit Blog</h2>
+    <div className="p-6 text-white">
+      <h1 className="text-2xl mb-6">
+        {user.role === "admin" ? "All Blogs (Admin)" : "My Blogs"}
+      </h1>
 
-        <input
-          type="text"
-          placeholder="Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="w-full p-2 mb-3 bg-gray-700 rounded border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
-        />
+      {blogs.length === 0 && <p>No blogs found</p>}
 
-        <textarea
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="w-full p-2 mb-3 bg-gray-700 rounded border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          rows="5"
-          required
-        />
+      {blogs.map((blog) => {
+        const isOwner = blog.user?._id === user._id;
+        const isAdmin = user.role === "admin";
 
-        <button className="w-full bg-green-600 hover:bg-green-700 p-2 rounded-lg cursor-pointer text-white transition duration-200">
-          Update Blog
-        </button>
-      </form>
+        return (
+          <div
+            key={blog._id}
+            className="bg-gray-800 p-4 mb-4 rounded shadow-md"
+          >
+            <h2 className="text-xl font-semibold">{blog.title}</h2>
+            <p className="my-2 text-gray-300">{blog.description}</p>
+
+            <p className="text-sm text-gray-400">
+              Author: {blog.user?.username}
+            </p>
+
+            {(isAdmin || isOwner) && (
+              <div className="flex gap-3 mt-3">
+                <button
+                  onClick={() => navigate(`/blog/edit/${blog._id}`)}
+                  className="bg-yellow-500 hover:bg-yellow-600 text-black px-3 py-1 rounded-lg"
+                >
+                  Edit
+                </button>
+
+                <button
+                  onClick={() => deleteBlog(blog._id)}
+                  className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg"
+                >
+                  Delete
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
 
-export default EditBlog;
+export default BlogIndex;

@@ -3,7 +3,7 @@ const router = express.Router();
 const Blog = require("../models/Blog");
 const auth = require("../middleware/auth");
 
-// CREATE BLOG
+// CREATE BLOG - any logged-in user
 router.post("/create", auth, async (req, res) => {
   try {
     const { title, description } = req.body;
@@ -11,7 +11,7 @@ router.post("/create", auth, async (req, res) => {
     const blog = new Blog({
       title,
       description,
-      user: req.user.id,
+      user: req.user.id, // user id from JWT
     });
 
     await blog.save();
@@ -22,20 +22,29 @@ router.post("/create", auth, async (req, res) => {
   }
 });
 
-// GET ALL BLOGS
-router.get("/", async (req, res) => {
+// GET ALL BLOGS - public
+router.get("/", auth, async (req, res) => {
   try {
-    const blogs = await Blog.find().populate("user", "_id username");
+    let blogs;
+
+    if (req.user.role === "admin") {
+      blogs = await Blog.find().populate("user", "username role");
+    } else {
+      blogs = await Blog.find({ user: req.user.id })
+        .populate("user", "username role");
+    }
+
     res.json(blogs);
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
 });
 
-// GET SINGLE BLOG
+
+// GET SINGLE BLOG - public
 router.get("/:id", async (req, res) => {
   try {
-    const blog = await Blog.findById(req.params.id).populate("user", "_id username");
+    const blog = await Blog.findById(req.params.id).populate("user", "_id username role");
     res.json(blog);
   } catch (err) {
     res.status(500).json({ message: "Server error" });
@@ -44,37 +53,42 @@ router.get("/:id", async (req, res) => {
 
 // UPDATE BLOG
 router.put("/:id", auth, async (req, res) => {
-  try {
-    const blog = await Blog.findById(req.params.id);
+  const blog = await Blog.findById(req.params.id);
 
-    if (!blog) return res.status(404).json({ message: "Blog not found" });
-    if (blog.user.toString() !== req.user.id)
-      return res.status(403).json({ message: "Not authorized" });
+  if (!blog) return res.status(404).json({ message: "Blog not found" });
 
-    blog.title = req.body.title;
-    blog.description = req.body.description;
-
-    await blog.save();
-    res.json(blog);
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
+  // Admin OR owner
+  if (
+    req.user.role !== "admin" &&
+    blog.user.toString() !== req.user.id
+  ) {
+    return res.status(403).json({ message: "Not authorized" });
   }
+
+  blog.title = req.body.title;
+  blog.description = req.body.description;
+  await blog.save();
+
+  res.json(blog);
 });
+
 
 // DELETE BLOG
 router.delete("/:id", auth, async (req, res) => {
-  try {
-    const blog = await Blog.findById(req.params.id);
+  const blog = await Blog.findById(req.params.id);
 
-    if (!blog) return res.status(404).json({ message: "Blog not found" });
-    if (blog.user.toString() !== req.user.id)
-      return res.status(403).json({ message: "Not authorized" });
+  if (!blog) return res.status(404).json({ message: "Blog not found" });
 
-    await blog.deleteOne();
-    res.json({ message: "Blog deleted" });
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
+  if (
+    req.user.role !== "admin" &&
+    blog.user.toString() !== req.user.id
+  ) {
+    return res.status(403).json({ message: "Not authorized" });
   }
+
+  await blog.deleteOne();
+  res.json({ message: "Blog deleted" });
 });
+
 
 module.exports = router;

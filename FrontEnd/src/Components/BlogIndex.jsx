@@ -42,7 +42,8 @@ function BlogIndex({ user }) {
           <h2 className="text-xl font-semibold">{blog.title}</h2>
           <p className="my-2">{blog.description}</p>
 
-          {blog.user?._id === user._id && (
+          {/* ✅ Buttons show/hide for admin or blog owner */}
+          {user && (user.role === "admin" || blog.user?._id === user._id) && (
             <div className="flex gap-3 mt-2">
               <button
                 onClick={() => navigate(`/blog/edit/${blog._id}`)}

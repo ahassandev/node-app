@@ -93,19 +93,25 @@ function App() {
         {/* CREATE BLOG */}
         <Route
           path="/create-blog"
-          element={user ? <CreateBlog /> : <Navigate to="/login" />}
+          element={
+            user ? <CreateBlog user={user} /> : <Navigate to="/login" />
+          }
         />
 
         {/* BLOG LIST */}
         <Route
           path="/blog/index"
-          element={user ? <BlogIndex user={user} /> : <Navigate to="/login" />}
+          element={
+            user ? <BlogIndex user={user} /> : <Navigate to="/login" />
+          }
         />
 
         {/* EDIT BLOG */}
         <Route
           path="/blog/edit/:id"
-          element={user ? <EditBlog /> : <Navigate to="/login" />}
+          element={
+            user ? <EditBlog user={user} /> : <Navigate to="/login" />
+          }
         />
 
         {/* LOGOUT */}

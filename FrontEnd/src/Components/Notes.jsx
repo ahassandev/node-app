@@ -6,7 +6,7 @@ function Notes({ user, onLogout }) {
   const [notes, setNotes] = useState([]);
   const navigate = useNavigate();
 
-  // 🔹 Fetch user notes/blogs
+  // 🔹 Fetch user notes
   useEffect(() => {
     const fetchNotes = async () => {
       try {
@@ -34,6 +34,11 @@ function Notes({ user, onLogout }) {
     navigate("/create-blog");
   };
 
+  // 🔹 Navigate to Blog Index page
+  const handleGoToBlogs = () => {
+    navigate("/blog/index");
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6">
       {/* Header */}
@@ -49,6 +54,14 @@ function Notes({ user, onLogout }) {
             Create Blog
           </button>
 
+          {/* Go to Blogs Button */}
+          <button
+            onClick={handleGoToBlogs}
+            className="py-2 px-4 bg-green-600 hover:bg-green-700 rounded-lg cursor-pointer"
+          >
+            Go to Blogs
+          </button>
+
           {/* Logout Button */}
           <button
             onClick={handleLogoutClick}
@@ -59,10 +72,10 @@ function Notes({ user, onLogout }) {
         </div>
       </div>
 
-      {/* Notes / Blogs List */}
+      {/* Notes List */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {notes.length === 0 ? (
-          <p className="text-gray-400">No blogs created yet.</p>
+          <p className="text-gray-400">No notes created yet.</p>
         ) : (
           notes.map((note) => (
             <div key={note._id} className="bg-gray-800 p-4 rounded-lg">
